@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS `department` (
 CREATE OR REPLACE VIEW `department_active` AS
 SELECT * FROM `department` WHERE `status` = 1;
 
+
+
 INSERT INTO `department` (`name`) VALUES('Бухгалтерія');
 INSERT INTO `department` (`name`) VALUES('Відділ маркетингу');
 INSERT INTO `department` (`name`) VALUES('Служба безпеки');
@@ -71,6 +73,14 @@ SELECT
   `d`.`name` AS `department_name` 
 FROM `employee` AS `e` JOIN `department` AS `d` ON `e`.`department_id` = `d`.`id`
 WHERE `e`.`status` = 1 AND `d`.`status` = 1;
+
+CREATE OR REPLACE VIEW `department_active_info` AS
+SELECT 
+  `d`.`id` AS `id`,
+  `d`.`name` AS `name`,
+  COUNT(`e`.`id`) AS `count_employee`
+FROM `department_active` `d` JOIN `employee_active` `e` ON `d`.`id` = `e`.`department_id`
+GROUP BY `d`.`id`, `d`.`name`;
 
 INSERT INTO `employee` (`email`, `first_name`, `last_name`, `department_id`) VALUES('a1@example.com', 'Петро', 'Петренко', 1);
 INSERT INTO `employee` (`email`, `first_name`, `last_name`, `department_id`) VALUES('b1@example.com', 'Іван', 'Іваненко', 1);
@@ -140,11 +150,17 @@ INSERT INTO `norm` (`kind_id`, `department_id`, `year`, `month`, `amount`) VALUE
 INSERT INTO `norm` (`kind_id`, `department_id`, `year`, `month`, `amount`) VALUES(2, 1, 2021, 3, 1500);
 INSERT INTO `norm` (`kind_id`, `department_id`, `year`, `month`, `amount`) VALUES(2, 2, 2021, 3, 2500);
 
+INSERT INTO `norm` (`kind_id`, `department_id`, `year`, `month`, `amount`) VALUES(1, 1, 2021, 4, 1000);
+INSERT INTO `norm` (`kind_id`, `department_id`, `year`, `month`, `amount`) VALUES(1, 2, 2021, 4, 2000);
+
+INSERT INTO `norm` (`kind_id`, `department_id`, `year`, `month`, `amount`) VALUES(2, 1, 2021, 4, 1500);
+INSERT INTO `norm` (`kind_id`, `department_id`, `year`, `month`, `amount`) VALUES(2, 2, 2021, 4, 2500);
+
 INSERT INTO `norm` (`kind_id`, `department_id`, `year`, `month`, `amount`) VALUES(1, 3, 2021, 1, 0);
 INSERT INTO `norm` (`kind_id`, `department_id`, `year`, `month`, `amount`) VALUES(2, 3, 2021, 1, 0);
 
 
-UPDATE `norm` SET `status` = 1 WHERE `id` <= 12;
+UPDATE `norm` SET `status` = 1 WHERE `id` <= 16;
 
 
 CREATE TABLE  IF NOT EXISTS `receipt` (
@@ -186,10 +202,33 @@ FROM `receipt` AS `r` JOIN `employee_active_info` AS `e` ON `r`.`employee_id` = 
   JOIN `norm_active_info` AS `n` ON `r`.`norm_id` = `n`.`id`
 WHERE `r`.`status` = 1;
 
+CREATE OR REPLACE VIEW `sum_receipt_active_by_month_department_norm` AS
+SELECT 
+  `r`.`year` AS `year`,
+  `r`.`month` AS `month`,
+  `r`.`department_id` AS `department_id`,
+  `r`.`department_name` AS `department_name`,
+  `r`.`norm_id` AS `norm_id`,
+  `r`.`kind_name` AS `kind_name`,
+  sum(`r`.`amount`) AS `amount`
+FROM `receipt_active_info` `r`
+GROUP BY 
+  `r`.`year`,
+  `r`.`month`,
+  `r`.`department_id`,
+  `r`.`department_name`,
+  `r`.`norm_id`,
+  `r`.`kind_name`;
+
 INSERT INTO `receipt` (`norm_id`, `employee_id`, `date`, `amount`, `description`) VALUES(1, 1, '2021.01.02', 100, 'Олівці 10 шт');
 INSERT INTO `receipt` (`norm_id`, `employee_id`, `date`, `amount`, `description`) VALUES(1, 2, '2021.01.02', 200, 'Ручки 5 шт');
 INSERT INTO `receipt` (`norm_id`, `employee_id`, `date`, `amount`, `description`) VALUES(1, 4, '2021.01.03', 50, 'Файли 100 шт');
 INSERT INTO `receipt` (`norm_id`, `employee_id`, `date`, `amount`, `description`) VALUES(1, 5, '2021.01.04', 300, 'Ножиці 3 шт');
 
-UPDATE `receipt` SET `status` = 1 WHERE `id` <= 4;
+INSERT INTO `receipt` (`norm_id`, `employee_id`, `date`, `amount`, `description`) VALUES(13, 1, '2021.04.02', 100, 'Олівці 10 шт');
+INSERT INTO `receipt` (`norm_id`, `employee_id`, `date`, `amount`, `description`) VALUES(13, 2, '2021.04.02', 200, 'Ручки 5 шт');
+INSERT INTO `receipt` (`norm_id`, `employee_id`, `date`, `amount`, `description`) VALUES(13, 4, '2021.04.03', 50, 'Файли 100 шт');
+INSERT INTO `receipt` (`norm_id`, `employee_id`, `date`, `amount`, `description`) VALUES(13, 5, '2021.04.04', 300, 'Ножиці 3 шт');
+
+UPDATE `receipt` SET `status` = 1 WHERE `id` <= 8;
 
