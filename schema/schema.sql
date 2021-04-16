@@ -1,3 +1,4 @@
+
 DROP TABLE IF EXISTS `receipt`;
 DROP TABLE IF EXISTS `norm`;
 DROP TABLE IF EXISTS `employee`;
@@ -161,7 +162,6 @@ INSERT INTO `norm` (`kind_id`, `department_id`, `year`, `month`, `amount`) VALUE
 
 
 UPDATE `norm` SET `status` = 1 WHERE `id` <= 16;
-
 
 CREATE TABLE  IF NOT EXISTS `receipt` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
